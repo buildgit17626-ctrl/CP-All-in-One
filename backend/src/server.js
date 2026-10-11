@@ -5,9 +5,7 @@ import { connectDB } from './config/db.js';
 import contestRoutes from './routes/contests.js';
 import { initCronJobs } from './jobs/cron.js';
 import { rateLimit } from './middleware/rateLimit.js';
-import profileRoutes from './routes/profiles.js';
-import { fileURLToPath } from 'node:url';
-import cron from 'node-cron';
+import retiredProfileRoutes from './routes/retiredProfiles.js';
 
 dotenv.config();
 
@@ -23,15 +21,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api/v1', contestRoutes);
-app.use('/api/v1', profileRoutes);
-const adminAssets = fileURLToPath(new URL('../public/', import.meta.url));
-app.get('/admin', (_req, res) => {
-  res.set('Cache-Control', 'no-store');
-  res.set('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'");
-  res.set('Referrer-Policy', 'no-referrer');
-  res.sendFile('admin.html', { root: adminAssets });
-});
-app.use('/admin-assets', express.static(adminAssets, { index: false, dotfiles: 'deny' }));
+app.use('/api/v1', retiredProfileRoutes);
 // Backups now go directly from the extension to GitHub; never relay credentials.
 app.post('/api/v1/sync/github', (_req, res) => res.status(410).json({ success: false, error: 'Update the extension to use direct GitHub backups.' }));
 
@@ -47,7 +37,6 @@ app.get('/health', (req, res) => {
 async function startServer() {
   await connectDB();
   initCronJobs();
-  cron.schedule('* * * * *', () => profileRoutes.refreshNext().catch(() => console.warn('[Profiles] Refresh will retry later.')), { noOverlap: true, timezone: 'UTC' });
 
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`[Express] CP-Sync API Server running on port ${PORT}`);
