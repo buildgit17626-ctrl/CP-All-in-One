@@ -2,6 +2,18 @@
 
 A full-stack synchronization system for Competitive Programming contests and automatic solution backup to GitHub.
 
+## Install and get started
+
+1. Open [CP : All in One on the Chrome Web Store](https://chromewebstore.google.com/detail/cp-all-in-one/fcijnofcjnpdnbelefnpicmhdjdppkpn).
+2. Click **Add to Chrome** and confirm the installation.
+3. Pin the extension from Chrome's Extensions menu and open it.
+4. Browse **Contests**. Optionally connect Google Calendar for reminders or connect GitHub and select a private repository for accepted-solution backups.
+5. Open a supported problem page to save notes for that question.
+
+The published extension uses the hosted backend. You do not need to run localhost, install Node.js, or enable Developer mode to use it.
+
+Website: [cpallinone.in](https://cpallinone.in/)
+
 ---
 
 ## Architecture Components
@@ -40,7 +52,7 @@ A full-stack synchronization system for Competitive Programming contests and aut
 
 ---
 
-## Quick Start Guide
+## Local development (contributors only)
 
 ### Running the Backend Server
 ```bash
