@@ -72,3 +72,5 @@ Load the generated `extension/dist` folder into Chrome:
 1. Open Chrome and navigate to `chrome://extensions/`
 2. Enable **Developer mode** (top right toggle).
 3. Click **Load unpacked** and select the `extension/dist` folder.
+
+   Video URL: https://drive.google.com/file/d/1BSAWzeVqIgOLR9EwII5LvE4bTqM_uc58/view?usp=sharing
