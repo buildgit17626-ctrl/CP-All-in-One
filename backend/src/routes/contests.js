@@ -17,6 +17,8 @@ router.get('/contests', async (req, res) => {
     if ((platform && typeof platform !== 'string') || (status && !['BEFORE', 'CODING', 'FINISHED'].includes(status))) {
       return res.status(400).json({ success: false, error: 'Invalid filter' });
     }
+    // Wake a sleeping host's schedule without blocking the cached response.
+    if (lastSyncAt && Date.now() - Date.parse(lastSyncAt) > 30 * 60000) syncAllContests().catch(error => console.warn('[Contests] Refresh failed:', error.message));
     const isDbConnected = mongoose.connection.readyState === 1;
 
     let contests = [];
@@ -37,7 +39,12 @@ router.get('/contests', async (req, res) => {
         query.endTime = { $gt: new Date() };
       }
 
-      contests = await Contest.find(query).sort({ startTime: 1 }).lean();
+      try { contests = await Contest.find(query).sort({ startTime: 1 }).lean(); }
+      catch { contests = Array.from(inMemoryContests.values()); }
+      const current = new Map(contests.map(c => [c.platform + '_' + c.contestId, c]));
+      for (const [key, c] of inMemoryContests) current.set(key, c);
+      contests = [...current.values()].filter(c => !platform || c.platform.toLowerCase() === platform.toLowerCase());
+      contests.sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
     } else {
       // Memory fallback
       contests = Array.from(inMemoryContests.values());

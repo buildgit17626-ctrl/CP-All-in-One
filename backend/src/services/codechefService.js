@@ -29,6 +29,7 @@ export async function fetchCodeChefContests() {
 
       const startMs = startTime.getTime();
       const endMs = endTime.getTime();
+      if (endMs <= now || endMs <= startMs) continue;
       const durationSeconds = Math.max(0, Math.floor((endMs - startMs) / 1000));
 
       contests.push({

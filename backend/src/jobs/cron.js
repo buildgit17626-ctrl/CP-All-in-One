@@ -52,11 +52,11 @@ async function runSync() {
       ...unstopContests,
     ];
 
-    // Deduplicate by platform + title
+    // Different rounds can share a title. Prefer the canonical event URL.
     const uniqueMap = new Map();
     for (const c of rawList) {
       if (!c || typeof c.platform !== 'string' || typeof c.title !== 'string') continue;
-      const key = `${c.platform.toLowerCase()}_${c.title.toLowerCase().trim()}`;
+      const key = `${c.platform.toLowerCase()}_${String(c.url || c.contestId).replace(/\/+$/, '')}`;
       if (!uniqueMap.has(key)) {
         uniqueMap.set(key, c);
       }
@@ -85,11 +85,15 @@ async function runSync() {
 
     const validContests = allContests.filter(c => c.contestId && c.title && c.url &&
       Number.isFinite(new Date(c.startTime).getTime()) && new Date(c.endTime) > new Date(c.startTime));
+    // Keep the live schedule available even if a connected database rejects writes.
+    for (const contest of validContests) inMemoryContests.set(contest.platform + '_' + contest.contestId, contest);
     if (isDbConnected && validContests.length) {
+      try {
       await Contest.bulkWrite(validContests.map(contest => ({ updateOne: {
         filter: { platform: contest.platform, contestId: contest.contestId },
         update: { $set: contest }, upsert: true,
       } })), { ordered: false });
+      } catch (error) { console.warn('[Cron] Database write failed; serving memory schedule:', error.message); }
     }
     for (const contest of validContests) inMemoryContests.set(contest.platform + '_' + contest.contestId, contest);
     for (const [key, contest] of inMemoryContests) {

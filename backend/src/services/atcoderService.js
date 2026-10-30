@@ -16,17 +16,8 @@ function isMainAtCoderContest(title, slug = '') {
     return false;
   }
 
-  return (
-    lowerSlug.startsWith('abc') ||
-    lowerSlug.startsWith('arc') ||
-    lowerSlug.startsWith('agc') ||
-    lowerSlug.startsWith('ahc') ||
-    lowerTitle.includes('atcoder beginner contest') ||
-    lowerTitle.includes('atcoder regular contest') ||
-    lowerTitle.includes('atcoder grand contest') ||
-    lowerTitle.includes('atcoder heuristic contest') ||
-    /\b(abc|arc|agc|ahc)\d+\b/i.test(cleanTitle)
-  );
+  // Include announced sponsored and special contests as well as ABC/ARC/AGC/AHC.
+  return /^[a-z0-9_-]+$/i.test(slug);
 }
 
 /**
@@ -47,7 +38,7 @@ async function fetchAtCoderFromProblems() {
         if (!item.id || !item.title || !isMainAtCoderContest(item.title, item.id) || isNaN(startTime.getTime()) || isNaN(endTime.getTime())) return null;
         if (endTime.getTime() < now) return null;
 
-        const cleanTitle = item.title.replace(/[^\x00-\x7F]/g, ' ').replace(/\s+/g, ' ').trim();
+        const cleanTitle = item.title.replace(/\s+/g, ' ').trim();
 
         return {
           contestId: `ac-${item.id}`,
@@ -100,7 +91,7 @@ export async function fetchAtCoderContests() {
         const relUrl = titleAnchor.attr('href') || '';
         const slug = relUrl.split('/').filter(Boolean).pop() || '';
 
-        const cleanTitle = rawTitle.replace(/[^\x00-\x7F]/g, ' ').replace(/\s+/g, ' ').trim();
+        const cleanTitle = rawTitle.replace(/\s+/g, ' ').trim();
 
         if (!rawTitle || !relUrl) return;
 
